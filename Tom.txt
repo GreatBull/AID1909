@@ -1,2 +1,5 @@
 def function():
     print("Tom做了很多工作")
+    
+    
+ print("hello world")
