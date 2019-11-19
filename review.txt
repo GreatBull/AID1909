@@ -1,0 +1,42 @@
+前情回顾
+
+1. 视图的使用
+
+    create [or replace] view [view_name] as [select...]
+
+    drop view [if exists] [view_name]
+
+2. 函数存储过程
+
+    函数： 有返回值，参数只能是输入类型的参数，使用select调用，可以用在语句中
+
+    存储过程： 没有返回值，参数为in out inout类型。更类似语句执行集合，是有call调用
+
+    delimiter [符号]
+    create function [fname](args) returns [r_type]
+    begin
+    语句1
+    语句2
+    return [val]
+    end [符号]
+
+    create procedure [pname](args)
+    begin
+    语句1
+    语句2
+    return [val]
+    end [符号]
+
+3. 事务
+
+    一个数据操作的完整过程
+
+    四大特性：
+        *原子性  一致性  *隔离性 持久性
+
+    begin;
+    语句1；
+    语句2；
+    ......
+    commit  (提交)
+    rollback  (回滚)
