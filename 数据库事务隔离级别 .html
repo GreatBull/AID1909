@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<!-- saved from url=(0046)https://www.cnblogs.com/balfish/p/8298296.html -->
+<html lang="zh-cn"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="origin">
+    <meta property="og:description" content="一 数据库事务的隔离级别 数据库事务的隔离级别有4个，由低到高依次为Read uncommitted&amp;#160;、Read committed&amp;#160;、Repeatable read&amp;#160;、">
+    <meta http-equiv="Cache-Control" content="no-transform">
+    <meta http-equiv="Cache-Control" content="no-siteapp">
+    <title>数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读 - balfish - 博客园</title>
+    
+    <link rel="stylesheet" href="./数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读 - balfish - 博客园_files/blog-common.min.css">
+    <link id="MainCss" rel="stylesheet" href="./数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读 - balfish - 博客园_files/bundle-coffee.min.css">
+    
+    <link id="mobile-style" media="only screen and (max-width: 767px)" type="text/css" rel="stylesheet" href="./数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读 - balfish - 博客园_files/bundle-coffee-mobile.min.css">
+    
+    <link type="application/rss+xml" rel="alternate" href="https://www.cnblogs.com/balfish/rss">
+    <link type="application/rsd+xml" rel="EditURI" href="https://www.cnblogs.com/balfish/rsd.xml">
+    <link type="application/wlwmanifest+xml" rel="wlwmanifest" href="https://www.cnblogs.com/balfish/wlwmanifest.xml">
+    <script src="./数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读 - balfish - 博客园_files/amp4ads-host-v0.js"></script><script src="./数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读 - balfish - 博客园_files/pubads_impl_rendering_2019111201.js"></script><script async="" src="./数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读 - balfish - 博客园_files/analytics.js"></script><script type="text/javascript" src="./数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读 - balfish - 博客园_files/encoder.js"></script><script src="./数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读 - balfish - 博客园_files/jquery-2.2.0.min.js"></script>
+    <script src="./数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读 - balfish - 博客园_files/blog-common.min.js"></script>
+    <script>
+        var currentBlogId = 200459;
+        var currentBlogApp = 'balfish';
+        var cb_enable_mathjax = false;
+        var isLogined = false;
+    </script>
+    
+    
+    
+<link rel="preload" href="./数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读 - balfish - 博客园_files/f.txt" as="script"><script type="text/javascript" src="./数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读 - balfish - 博客园_files/f.txt"></script><script src="./数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读 - balfish - 博客园_files/pubads_impl_2019111201.js" async=""></script><link rel="prefetch" href="https://tpc.googlesyndication.com/safeframe/1-0-36/html/container.html"></head>
+<body>
+    <a name="top"></a>
+    
+    
+<!--done-->
+<div id="home">
+<div id="header">
+	<div id="blogTitle">
+	<a href="https://www.cnblogs.com/balfish/"><img id="blogLogo" src="./数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读 - balfish - 博客园_files/logo.gif" alt="返回主页"></a>			
+		
+<!--done-->
+<h1><a id="Header1_HeaderTitle" class="headermaintitle HeaderMainTitle" href="https://www.cnblogs.com/balfish/">宇宙唯心</a>
+</h1>
+<h2>
+自从成了福报厂员工，无暇更新-v-
+</h2>
+
+
+
+
+		
+	</div><!--end: blogTitle 博客的标题和副标题 -->
+</div><!--end: header 头部 -->
+
+<div id="main">
+	<div id="mainContent">
+	<div class="forFlow">
+		<div id="navigator">
+			
+<ul id="navList">
+	<li><a id="blog_nav_sitehome" class="menu" href="https://www.cnblogs.com/">
+博客园</a>
+</li>
+	<li>
+<a id="blog_nav_myhome" class="menu" href="https://www.cnblogs.com/balfish/">
+首页</a>
+</li>
+	<li>
+
+<a id="blog_nav_newpost" class="menu" href="https://i.cnblogs.com/EditPosts.aspx?opt=1">
+新随笔</a>
+</li>
+	<li>
+<a id="blog_nav_contact" class="menu" href="https://msg.cnblogs.com/send/balfish">
+联系</a></li>
+	<li>
+<a id="blog_nav_admin" class="menu" href="https://i.cnblogs.com/">
+管理</a>
+</li>
+	<li>
+<a id="blog_nav_rss" class="menu" href="https://www.cnblogs.com/balfish/rss/">
+订阅</a>
+	
+<a id="blog_nav_rss_image" href="https://www.cnblogs.com/balfish/rss/">
+    <img src="./数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读 - balfish - 博客园_files/xml.gif" alt="订阅">
+</a></li>
+</ul>
+
+
+
+			<div class="blogStats">
+				
+				<!--done-->
+随笔- 
+88&nbsp;
+文章- 
+0&nbsp;
+评论- 
+8&nbsp;
+
+
+
+				
+			</div><!--end: blogStats -->
+		</div><!--end: navigator 博客导航栏 -->
+		<div id="post_detail">
+<!--done-->
+<div id="topics">
+	<div class="post">
+		<h1 class="postTitle">
+			
+<a id="cb_post_title_url" class="postTitle2" href="https://www.cnblogs.com/balfish/p/8298296.html">数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读</a>
+
+		</h1>
+		<div class="clear"></div>
+		<div class="postBody">
+			
+<div id="cnblogs_post_body" class="blogpost-body "><a name="_labelTop"></a><div id="navCategory"><p style="font-size:18px"><b>阅读目录</b></p><ul><li><a href="https://www.cnblogs.com/balfish/p/8298296.html#_label0">一 数据库事务的隔离级别</a></li><li><a href="https://www.cnblogs.com/balfish/p/8298296.html#_label1">二 不同事务级别带来的并发问题</a></li><li><a href="https://www.cnblogs.com/balfish/p/8298296.html#_label2">三 例子比较不可重复读和幻读</a></li></ul></div>
+    <div style="text-align: right"><a href="https://www.cnblogs.com/balfish/p/8298296.html#_labelTop">回到顶部</a><a name="_label0"></a></div><h2>一 数据库事务的隔离级别</h2>
+<p>数据库事务的隔离级别有4个，由低到高依次为<span class="importance">Read uncommitted&nbsp;、<span class="importance">Read committed&nbsp;、<span class="importance">Repeatable read&nbsp;、<span class="importance">Serializable&nbsp;，这四个级别可以逐个解决<span class="importance">脏读&nbsp;、<span class="importance">不可重复读&nbsp;、<span class="importance">幻读这几类问题。</span></span></span></span></span></span></span></p>
+<p>&nbsp;<img src="./数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读 - balfish - 博客园_files/679616-20180116184232756-1519061918.png" alt="" width="750" height="260"></p>
+<div class="detail">
+<h3 style="text-align: left;">1. Read UnCommitted(<span style="color: #993300;">读未提交</span>)</h3>
+<p style="text-align: left;">最低的隔离级别。一个事务可以读取另一个事务并未提交的更新结果。</p>
+<h3 style="text-align: left;">2. Read Committed(<span style="color: #993300;">读提交</span>)</h3>
+<p style="text-align: left;">大部分数据库采用的默认隔离级别。一个事务的更新操作结果只有在该事务提交之后，另一个事务才可以的读取到同一笔数据更新后的结果。</p>
+<h3 style="text-align: left;">3. Repeatable Read(<span style="color: #993300;">重复读</span>)</h3>
+<p style="text-align: left;"><strong><span style="color: #ff00ff;">mysql的默认级别</span></strong>。整个事务过程中，对同一笔数据的读取结果是相同的，不管其他事务是否在对共享数据进行更新，也不管更新提交与否。</p>
+<h3 style="text-align: left;">4. Serializable(<span style="color: #993300;">序列化</span>)</h3>
+<p style="text-align: left;">最高隔离级别。所有事务操作依次顺序执行。注意这会导致并发度下降，性能最差。通常会用其他并发级别加上相应的并发锁机制来取代它。</p>
+<p style="text-align: left;">&nbsp;</p>
+<p style="text-align: left;">&nbsp;</p>
+<p style="text-align: left;">&nbsp;</p>
+<div style="text-align: right"><a href="https://www.cnblogs.com/balfish/p/8298296.html#_labelTop">回到顶部</a><a name="_label1"></a></div><h2 style="text-align: left;">二 不同事务级别带来的并发问题</h2>
+<h3 style="text-align: left;">1 脏读</h3>
+<p style="text-align: left;">脏读发生在一个事务A读取了被另一个事务B修改，但是还未提交的数据。假如B回退，则事务A读取的是无效的数据。这跟不可重复读类似，但是第二个事务不需要执行提交。&nbsp;</p>
+<p style="text-align: left;"><img src="./数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读 - balfish - 博客园_files/679616-20180116200104771-2088159786.png" alt="" width="440" height="249"></p>
+<p style="text-align: left;">&nbsp;</p>
+<h3 style="text-align: left;">2 不可重复读</h3>
+<p>在基于锁的并行控制方法中，如果在执行select时不添加读锁，就会发生不可重复读问题。</p>
+<p>在多版本并行控制机制中，当一个遇到提交冲突的事务需要回退但却被释放时，会发生不可重复读问题。</p>
+<p><img src="./数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读 - balfish - 博客园_files/679616-20180116200355459-1921064716.png" alt="" width="365" height="318"></p>
+<p>在上面这个例子中，事务2提交成功，它所做的修改已经可见。然而，事务1已经读取了一个其它的值。在序列化和可重复读的隔离级别中，数据库管理系统会返回旧值，即在被事务2修改之前的值。在提交读和未提交读隔离级别下，可能会返回被更新的值，这就是“不可重复读”。</p>
+<p>&nbsp;</p>
+<p>有两个策略可以防止这个问题的发生：</p>
+<p>(1) 推迟事务2的执行，直至事务1提交或者回退。这种策略在使用锁时应用。</p>
+<p>(2) 而在多版本并行控制中，事务2可以被先提交。而事务1，继续执行在旧版本的数据上。当事务1终于尝试提交时，数据库会检验它的结果是否和事务1、事务2顺序执行时一样。如果是，则事务1提交成功。如果不是，事务1会被回退。</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>3&nbsp;<strong>幻读</strong>&nbsp;</p>
+<p>幻读发生在当两个完全相同的查询执行时，第二次查询所返回的结果集跟第一个查询不相同。</p>
+<p>发生的情况：没有范围锁。</p>
+<p><img src="./数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读 - balfish - 博客园_files/679616-20180116200328896-2116591601.png" alt="" width="284" height="439"></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<div style="text-align: right"><a href="https://www.cnblogs.com/balfish/p/8298296.html#_labelTop">回到顶部</a><a name="_label2"></a></div><h2>三 例子比较不可重复读和幻读</h2>
+<h3>1&nbsp;不可重复读</h3>
+<p>不可重复读的重点是<span style="color: #993300;">修改</span>:&nbsp;同样的条件,&nbsp;你读取过的数据,&nbsp;再次读取出来发现值不一样了</p>
+<p>例子:</p>
+<p>在事务1中，Mary 读取了自己的工资为1000,操作并没有完成&nbsp;</p>
+<div class="cnblogs_code">
+<pre>con1 =<span style="color: #000000;"> getConnection();  
+select salary from employee empId </span>="Mary";  </pre>
+</div>
+<p>在事务2中，这时财务人员修改了Mary的工资为2000,并提交了事务.&nbsp;</p>
+<div class="cnblogs_code">
+<pre>con2 =<span style="color: #000000;"> getConnection();  
+update employee set salary </span>= 2000<span style="color: #000000;">;  
+con2.commit(); </span></pre>
+</div>
+<p>在事务1中，Mary 再次读取自己的工资时，工资变为了2000&nbsp;</p>
+<div id="" class="dp-highlighter">
+<div class="cnblogs_code">
+<pre>select salary from employee empId ="Mary"; </pre>
+</div>
+<p>在一个事务中前后两次读取的结果并不致，导致了不可重复读。</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h3>&nbsp;2&nbsp;幻读</h3>
+</div>
+<div class="dp-highlighter">幻读的重点在于<span style="color: #993300;">新增或者删除 (数据条数变化)。</span>同样的条件,&nbsp;第1次和第2次读出来的记录数不一样</div>
+<p>例子：</p>
+<p>目前工资为1000的员工有10人。&nbsp;<br>事务1,读取所有工资为1000的员工。&nbsp;</p>
+<div class="cnblogs_code">
+<pre>con1 =<span style="color: #000000;"> getConnection();  
+Select </span>* from employee where salary =1000;  </pre>
+</div>
+<p>共读取10条记录&nbsp;<br><br>这时另一个事务向employee表插入了一条员工记录，工资也为1000&nbsp;</p>
+<div class="cnblogs_code">
+<pre>con2 =<span style="color: #000000;"> getConnection();  
+Insert into employee(empId,salary) values(</span>"Lili",1000<span style="color: #000000;">);  
+con2.commit();  </span></pre>
+</div>
+<p>事务1再次读取所有工资为1000的员工&nbsp;</p>
+<div class="cnblogs_code">
+<pre>select * from employee where salary =1000;  </pre>
+</div>
+<p>共读取到了11条记录，这就像产生了幻读。&nbsp;</p>
+</div>
+</div>
+<div id="MySignature"></div>
+<div class="clear"></div>
+<div id="blog_post_info_block"><div id="BlogPostCategory">
+    分类: 
+            <a href="https://www.cnblogs.com/balfish/category/618386.html" target="_blank">mysql/mybatis</a></div>
+
+
+    <div id="blog_post_info">
+<div id="green_channel">
+        <a href="javascript:void(0);" id="green_channel_digg" onclick="DiggIt(8298296,cb_blogId,1);green_channel_success(this,&#39;谢谢推荐！&#39;);">好文要顶</a>
+        <a id="green_channel_follow" onclick="follow(&#39;eb8a83e6-b14f-e411-b908-9dcfd8948a71&#39;);" href="javascript:void(0);">关注我</a>
+    <a id="green_channel_favorite" onclick="AddToWz(cb_entryId);return false;" href="javascript:void(0);">收藏该文</a>
+    <a id="green_channel_weibo" href="javascript:void(0);" title="分享至新浪微博" onclick="ShareToTsina()"><img src="./数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读 - balfish - 博客园_files/icon_weibo_24.png" alt=""></a>
+    <a id="green_channel_wechat" href="javascript:void(0);" title="分享至微信" onclick="shareOnWechat()"><img src="./数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读 - balfish - 博客园_files/wechat.png" alt=""></a>
+</div>
+<div id="author_profile">
+    <div id="author_profile_info" class="author_profile_info">
+        <div id="author_profile_detail" class="author_profile_info">
+            <a href="https://home.cnblogs.com/u/balfish/">balfish</a><br>
+            <a href="https://home.cnblogs.com/u/balfish/followees/">关注 - 0</a><br>
+            <a href="https://home.cnblogs.com/u/balfish/followers/">粉丝 - 10</a>
+        </div>
+    </div>
+    <div class="clear"></div>
+    <div id="author_profile_honor"></div>
+    <div id="author_profile_follow">
+                <a href="javascript:void(0);" onclick="follow(&#39;eb8a83e6-b14f-e411-b908-9dcfd8948a71&#39;);return false;">+加关注</a>
+    </div>
+</div>
+<div id="div_digg">
+    <div class="diggit" onclick="votePost(8298296,&#39;Digg&#39;)">
+        <span class="diggnum" id="digg_count">2</span>
+    </div>
+    <div class="buryit" onclick="votePost(8298296,&#39;Bury&#39;)">
+        <span class="burynum" id="bury_count">0</span>
+    </div>
+    <div class="clear"></div>
+    <div class="diggword" id="digg_tips">
+    </div>
+</div>
+
+<script type="text/javascript">
+    currentDiggType = 0;
+</script></div>
+    <div class="clear"></div>
+    <div id="post_next_prev">
+
+    <a href="https://www.cnblogs.com/balfish/p/8288891.html" class="p_n_p_prefix">« </a> 上一篇：    <a href="https://www.cnblogs.com/balfish/p/8288891.html" title="发布于 2018-01-15 17:08">MyISAM 和 InnoDB 索引的区别</a>
+    <br>
+    <a href="https://www.cnblogs.com/balfish/p/8495798.html" class="p_n_p_prefix">» </a> 下一篇：    <a href="https://www.cnblogs.com/balfish/p/8495798.html" title="发布于 2018-03-03 09:27">从 select ... for update来分析mysql的锁</a>
+
+</div>
+</div>
+		</div>
+		<div class="postDesc">posted @ 
+<span id="post-date">2018-01-16 19:06</span>&nbsp;<a href="https://www.cnblogs.com/balfish/">balfish</a> 阅读(<span id="post_view_count">18268</span>) 评论(<span id="post_comment_count">3</span>) <a href="https://i.cnblogs.com/EditPosts.aspx?postid=8298296" rel="nofollow"> 编辑</a> <a href="javascript:void(0)" onclick="AddToWz(8298296); return false;">收藏</a>
+</div>
+	</div>
+	
+	
+</div><!--end: topics 文章、评论容器-->
+<script src="./数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读 - balfish - 博客园_files/highlight.min.js"></script>
+<script>markdown_highlight();</script>
+<script>
+    var allowComments = true, cb_blogId = 200459, cb_blogApp = 'balfish', cb_blogUserGuid = 'eb8a83e6-b14f-e411-b908-9dcfd8948a71';
+    var cb_entryId = 8298296, cb_entryCreatedDate = '2018-01-16 19:06', cb_postType = 1; 
+    loadViewCount(cb_entryId);
+</script><a name="!comments"></a>
+<div id="blog-comments-placeholder">
+
+<div id="comment_pager_top">
+    
+</div>
+
+<!--done-->
+<br>
+<div class="feedback_area_title">评论</div>
+<div class="feedbackNoItems"><div class="feedbackNoItems"></div></div>
+	
+		<div class="feedbackItem">
+			<div class="feedbackListSubtitle">
+				<div class="feedbackManage">
+					&nbsp;&nbsp;
+
+<span class="comment_actions">
+    
+    
+    
+    
+</span>
+
+
+				</div>
+				
+<a href="https://www.cnblogs.com/balfish/p/8298296.html#4014777" class="layer">#1楼</a>
+<a name="4014777" id="comment_anchor_4014777"></a>
+
+
+<span class="comment_date">2018-07-07 11:53</span>
+
+ | 
+
+            <a id="a_comment_author_4014777" href="https://www.cnblogs.com/xuzhiyuan/" target="_blank">xzy不会飞的地板流</a>
+
+			</div>
+			<div class="feedbackCon">
+				
+<div id="comment_body_4014777" class="blog_comment_body">
+    写的好挺好，简单清晰明了
+</div>
+        <div class="comment_vote">
+            <span class="comment_error" style="color: red"></span>
+            <a href="javascript:void(0);" class="comment_digg" onclick="return voteComment(4014777, &#39;Digg&#39;, this.parentElement, false);">
+                支持(0)
+            </a>
+            <a href="javascript:void(0);" class="comment_burry" onclick="return voteComment(4014777, &#39;Bury&#39;, this.parentElement, false);">
+                反对(0)
+            </a>
+        </div>
+        
+
+			</div>
+		</div>
+		<div class="feedbackItem">
+			<div class="feedbackListSubtitle">
+				<div class="feedbackManage">
+					&nbsp;&nbsp;
+
+<span class="comment_actions">
+    
+    
+    
+    
+</span>
+
+
+				</div>
+				
+<a href="https://www.cnblogs.com/balfish/p/8298296.html#4191644" class="layer">#2楼</a>
+<a name="4191644" id="comment_anchor_4191644"></a>
+
+
+<span class="comment_date">2019-03-01 17:31</span>
+
+ | 
+
+            <a id="a_comment_author_4191644" href="https://www.cnblogs.com/laorenzhenhaoa/" target="_blank">花满园</a>
+
+			</div>
+			<div class="feedbackCon">
+				
+<div id="comment_body_4191644" class="blog_comment_body">
+    简单明了，已收藏
+</div>
+        <div class="comment_vote">
+            <span class="comment_error" style="color: red"></span>
+            <a href="javascript:void(0);" class="comment_digg" onclick="return voteComment(4191644, &#39;Digg&#39;, this.parentElement, false);">
+                支持(0)
+            </a>
+            <a href="javascript:void(0);" class="comment_burry" onclick="return voteComment(4191644, &#39;Bury&#39;, this.parentElement, false);">
+                反对(0)
+            </a>
+        </div>
+        <span id="comment_4191644_avatar" style="display:none">
+            https://pic.cnblogs.com/face/942639/20160816114348.png
+        </span>
+
+			</div>
+		</div>
+		<div class="feedbackItem">
+			<div class="feedbackListSubtitle">
+				<div class="feedbackManage">
+					&nbsp;&nbsp;
+
+<span class="comment_actions">
+    
+    
+    
+    
+</span>
+
+
+				</div>
+				
+<a href="https://www.cnblogs.com/balfish/p/8298296.html#4199102" class="layer">#3楼</a>
+<a name="4199102" id="comment_anchor_4199102"></a>
+
+        <span id="comment-maxId" style="display:none">4199102</span>
+        <span id="comment-maxDate" style="display:none">2019/3/11 下午3:38:21</span>
+
+<span class="comment_date">2019-03-11 15:38</span>
+
+ | 
+
+            <a id="a_comment_author_4199102" href="https://www.cnblogs.com/xingzhe2008/" target="_blank">行者2008</a>
+
+			</div>
+			<div class="feedbackCon">
+				
+<div id="comment_body_4199102" class="blog_comment_body">
+    补充一点：本文分析的很透彻，赞！<br>虽然理论上说3. Repeatable Read(重复读)隔离级别在mysql中可能引起幻读的问题，但是mysql InnoDB存储引擎和XtraDB存储引擎通过多版本并发控制技术已经帮我们使用者解决了可能存在的幻读问题。意即，mysql如果用InnoDB或者XtraDB存储引擎并设置隔离级别为Repeatable Read也不会存在幻读问题，也就是效果和可串行化一样，但是效率比可串行化高的多。我猜这也是为什么mysql默认隔离级别为Repeatable Read的原因。
+</div>
+        <div class="comment_vote">
+            <span class="comment_error" style="color: red"></span>
+            <a href="javascript:void(0);" class="comment_digg" onclick="return voteComment(4199102, &#39;Digg&#39;, this.parentElement, false);">
+                支持(2)
+            </a>
+            <a href="javascript:void(0);" class="comment_burry" onclick="return voteComment(4199102, &#39;Bury&#39;, this.parentElement, false);">
+                反对(1)
+            </a>
+        </div>
+        <span id="comment_4199102_avatar" style="display:none">
+            https://pic.cnblogs.com/face/518335/20130824180210.png
+        </span>
+
+			</div>
+		</div>
+
+<div id="comment_pager_bottom">
+    
+</div>
+
+
+</div>
+<script>
+    var commentManager = new blogCommentManager();
+    commentManager.renderComments(0);
+</script>
+
+<div id="comment_form" class="commentform">
+    <a name="commentform"></a>
+    <div id="divCommentShow"></div>
+    <div id="comment_nav"><span id="span_refresh_tips"></span><a href="javascript:void(0);" onclick="return RefreshCommentList();" id="lnk_RefreshComments" runat="server" clientidmode="Static">刷新评论</a><a href="https://www.cnblogs.com/balfish/p/8298296.html#" onclick="return RefreshPage();">刷新页面</a><a href="https://www.cnblogs.com/balfish/p/8298296.html#top">返回顶部</a></div>
+    <div id="comment_form_container"><div class="login_tips">
+    注册用户登录后才能发表评论，请 
+    <a rel="nofollow" href="javascript:void(0);" class="underline" onclick="return login(&#39;commentform&#39;);">登录</a>
+     或 
+    <a rel="nofollow" href="javascript:void(0);" class="underline" onclick="return register();">注册</a>，
+    <a href="https://www.cnblogs.com/">访问</a> 网站首页。
+</div></div>
+    <div class="ad_text_commentbox" id="ad_text_under_commentbox"></div>
+    <div id="ad_t2"><a href="https://cloud.tencent.com/act/pro/overseas?fromSource=gwzcw.3090393.3090393.3090393&amp;utm_medium=cpc&amp;utm_id=gwzcw.3090393.3090393.3090393" target="_blank" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;T2-腾讯云&#39;)">【推荐】腾讯云海外1核2G云服务器低至2折，半价续费券限量免费领取！</a><br><a href="https://www.jdcloud.com/cn/activity/year-end?utm_source=DMT_cnblogs&amp;utm_medium=CH&amp;utm_campaign=q4vm&amp;utm_term=Virtual-Machines" target="_blank" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;T2-京东云&#39;)">【活动】京东云服务器_云主机低于1折，低价高性能产品备战双11</a><br><a href="http://www.ucancode.com/index.htm" target="_blank" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;T2-工控&#39;)">【推荐】超50万行VC++源码: 大型组态工控、电力仿真CAD与GIS源码库</a><br><a href="https://ke.qq.com/huodong/mashibing_pc/index.html?from=800018451" target="_blank" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;T2-马士兵&#39;)">【培训】马士兵老师强势回归！Java线下课程全免费，双十一大促！</a><br><a href="https://www.ctyun.cn/activity/20191111?hmsr=%E7%9C%8B%E7%9C%8B-%E5%8D%9A%E5%AE%A2%E5%9B%AD-%E5%8F%8C11-1106&amp;hmpl=&amp;hmcu=&amp;hmkw=&amp;hmci=" target="_blank" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;T2-天翼云&#39;)">【推荐】天翼云双十一翼降到底，云主机11.11元起，抽奖送大礼</a><br><a href="https://www.getui.com/2019devfest?f=5&amp;p=10&amp;c=15&amp;ch=1&amp;hmsr=%E5%8D%9A%E5%AE%A2%E5%9B%AD&amp;hmpl=2019%E5%BC%80%E5%8F%91%E8%80%85%E8%8A%82&amp;hmcu=PC&amp;hmkw=&amp;hmci=" target="_blank" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;T2-个推-1&#39;)">【福利】个推四大热门移动开发SDK全部免费用一年，限时抢！</a><br><a href="https://www.uibot.com.cn/sem/bky.html" target="_blank" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;T2-uibot_T2&#39;)">【推荐】流程自动化专家UiBot，全套体系化教程成就高薪RPA工程师</a><br></div>
+    <div id="opt_under_post"></div>
+    <script async="async" src="./数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读 - balfish - 博客园_files/gpt.js"></script>
+    <script>
+        var googletag = googletag || {};
+        googletag.cmd = googletag.cmd || [];
+    </script>
+    <script>
+        googletag.cmd.push(function () {
+            googletag.defineSlot("/1090369/C1", [300, 250], "div-gpt-ad-1546353474406-0").addService(googletag.pubads());
+            googletag.defineSlot("/1090369/C2", [468, 60], "div-gpt-ad-1539008685004-0").addService(googletag.pubads());
+            googletag.pubads().enableSingleRequest();
+            googletag.enableServices();
+        });
+    </script>
+    <div id="cnblogs_c1" class="c_ad_block">
+        <div id="div-gpt-ad-1546353474406-0" style="height:250px; width:300px;" data-google-query-id="COalnJaK7uUCFVnRlgodQ3EMOA"><div id="google_ads_iframe_/1090369/C1_0__container__" style="border: 0pt none;"><iframe id="google_ads_iframe_/1090369/C1_0" title="3rd party ad content" name="google_ads_iframe_/1090369/C1_0" width="300" height="250" scrolling="no" marginwidth="0" marginheight="0" frameborder="0" style="border: 0px; vertical-align: bottom;" data-google-container-id="1" data-load-complete="true" src="./数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读 - balfish - 博客园_files/saved_resource.html"></iframe></div></div>
+    </div>
+    <div id="under_post_news"><div class="recomm-block"><b>相关博文：</b><br>·  <a title="脏读、不可重复读和幻读的区别" href="https://www.cnblogs.com/Hakuna-Matata/p/7772794.html" target="_blank" onclick="clickRecomItmem(7772794)">脏读、不可重复读和幻读的区别</a><br>·  <a title="事务并发、事务隔离级别" href="https://www.cnblogs.com/drizzlewithwind/p/5805986.html" target="_blank" onclick="clickRecomItmem(5805986)">事务并发、事务隔离级别</a><br>·  <a title="[MySQL]对于事务并发处理带来的问题，脏读、不可重复读、幻读的理解" href="https://www.cnblogs.com/langdashu/p/6257160.html" target="_blank" onclick="clickRecomItmem(6257160)">[MySQL]对于事务并发处理带来的问题，脏读、不可重复读、幻读的理解</a><br>·  <a title="脏读、幻读、不可重复读和丢失更新" href="https://www.cnblogs.com/sushu-yaya/p/6944287.html" target="_blank" onclick="clickRecomItmem(6944287)">脏读、幻读、不可重复读和丢失更新</a><br>·  <a title="脏读|不可重复度|幻读的理解以及Spring定义的五种事务隔离级别" href="https://www.cnblogs.com/lomomiao/p/4223129.html" target="_blank" onclick="clickRecomItmem(4223129)">脏读|不可重复度|幻读的理解以及Spring定义的五种事务隔离级别</a><br>»  <a target="_blank" href="https://recomm.cnblogs.com/blogpost/8298296">更多推荐...</a></div></div>
+    <div id="cnblogs_c2" class="c_ad_block">
+        <div id="div-gpt-ad-1539008685004-0" style="height:60px; width:468px;" data-google-query-id="COelnJaK7uUCFVnRlgodQ3EMOA">
+            
+        <div id="google_ads_iframe_/1090369/C2_0__container__" style="border: 0pt none;"><iframe id="google_ads_iframe_/1090369/C2_0" title="3rd party ad content" name="google_ads_iframe_/1090369/C2_0" width="468" height="60" scrolling="no" marginwidth="0" marginheight="0" frameborder="0" style="border: 0px; vertical-align: bottom;" data-google-container-id="2" data-load-complete="true" src="./数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读 - balfish - 博客园_files/saved_resource(1).html"></iframe></div></div>
+    </div>
+    <div id="under_post_kb">
+<div class="itnews c_ad_block">
+    <b>最新 IT 新闻</b>:
+    <br>
+ ·              <a href="https://news.cnblogs.com/n/647617/" target="_blank">999元起！联想个人云存储发布：百度网盘互传、多种离线下载</a>
+            <br>
+ ·              <a href="https://news.cnblogs.com/n/647616/" target="_blank">苹果发布Swift的数学计算项目：Swift Numerics</a>
+            <br>
+ ·              <a href="https://news.cnblogs.com/n/647615/" target="_blank">京东第三季度净利润31亿元，同比暴涨160.6%</a>
+            <br>
+ ·              <a href="https://news.cnblogs.com/n/647614/" target="_blank">HIFIMAN发布新耳机DEVA 售价1780元</a>
+            <br>
+ ·              <a href="https://news.cnblogs.com/n/647613/" target="_blank">地产大亨宣布学习 Python 语言</a>
+            <br>
+    » <a href="https://news.cnblogs.com/" title="IT 新闻" target="_blank">更多新闻...</a>
+</div></div>
+    <div id="HistoryToday" class="c_ad_block"></div>
+    <script type="text/javascript">
+        fixPostBody();
+        setTimeout(function () { incrementViewCount(cb_entryId); }, 50);
+        deliverAdT2();
+        deliverAdC1();
+        deliverAdC2();
+        loadNewsAndKb();
+        loadBlogSignature();
+LoadPostCategoriesTags(cb_blogId, cb_entryId);        LoadPostInfoBlock(cb_blogId, cb_entryId, cb_blogApp, cb_blogUserGuid);
+        GetPrevNextPost(cb_entryId, cb_blogId, cb_entryCreatedDate, cb_postType);
+        loadOptUnderPost();
+        GetHistoryToday(cb_blogId, cb_blogApp, cb_entryCreatedDate);
+    </script>
+</div></div>
+
+
+	</div><!--end: forFlow -->
+	</div><!--end: mainContent 主体内容容器-->
+
+	<div id="sideBar">
+		<div id="sideBarMain">
+			
+<div id="sidebar_news" class="newsItem"><!--done-->
+<div class="newsItem">
+<h3 class="catListTitle">公告</h3>
+	
+<div id="blog-news">
+    
+    <div id="profile_block">
+        昵称：
+        <a href="https://home.cnblogs.com/u/balfish/">
+            balfish
+        </a>
+        <br>
+        园龄：
+        <a href="https://home.cnblogs.com/u/balfish/" title="入园时间：2014-10-09">
+            5年1个月
+        </a>
+        <br>
+        粉丝：
+        <a href="https://home.cnblogs.com/u/balfish/followers/">
+            10
+        </a>
+        <br>
+        关注：
+        <a href="https://home.cnblogs.com/u/balfish/followees/">
+            0
+        </a>
+        <div id="p_b_follow">
+<a href="javascript:void(0)" onclick="follow(&#39;eb8a83e6-b14f-e411-b908-9dcfd8948a71&#39;)">+加关注</a></div>
+        <script>getFollowStatus('eb8a83e6-b14f-e411-b908-9dcfd8948a71');</script>
+    </div>
+</div>
+</div>
+
+</div>
+
+			<div id="calendar"><div id="blog-calendar" style="">
+
+<table id="blogCalendar" class="Cal" cellspacing="0" cellpadding="0" title="Calendar" border="0">
+    <tbody>
+        <tr>
+            <td colspan="7">
+                <table class="CalTitle" cellspacing="0" border="0">
+                    <tbody>
+                        <tr>
+                            <td class="CalNextPrev">
+                                <a href="javascript:void(0);" onclick="loadBlogCalendar(&#39;2019/10/15&#39;); return false;">&lt;</a>
+                            </td>
+                            <td align="center">2019年11月</td>
+                            <td align="right" class="CalNextPrev">
+                                <a href="javascript:void(0);" onclick="loadBlogCalendar(&#39;2019/12/15&#39;); return false;">&gt;</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+        <tr>
+                    <th class="CalDayHeader" align="center" abbr="日" scope="col">日</th>
+                    <th class="CalDayHeader" align="center" abbr="一" scope="col">一</th>
+                    <th class="CalDayHeader" align="center" abbr="二" scope="col">二</th>
+                    <th class="CalDayHeader" align="center" abbr="三" scope="col">三</th>
+                    <th class="CalDayHeader" align="center" abbr="四" scope="col">四</th>
+                    <th class="CalDayHeader" align="center" abbr="五" scope="col">五</th>
+                    <th class="CalDayHeader" align="center" abbr="六" scope="col">六</th>
+        </tr>
+            <tr>
+                            <td class="CalOtherMonthDay" align="center">27</td>
+                            <td class="CalOtherMonthDay" align="center">28</td>
+                            <td class="CalOtherMonthDay" align="center">29</td>
+                            <td class="CalOtherMonthDay" align="center">30</td>
+                            <td class="CalOtherMonthDay" align="center">31</td>
+                        <td class="" align="center">
+                            1
+                        </td>
+                    <td class="CalWeekendDay" align="center">
+                        2
+                    </td>
+            </tr>
+                <tr>
+                        <td class="CalWeekendDay" align="center">
+                            3
+                        </td>
+                            <td class="" align="center">
+                                4
+                            </td>
+                            <td class="" align="center">
+                                5
+                            </td>
+                            <td class="" align="center">
+                                6
+                            </td>
+                            <td class="" align="center">
+                                7
+                            </td>
+                            <td class="" align="center">
+                                8
+                            </td>
+                        <td class="CalWeekendDay" align="center">
+                            9
+                        </td>
+                </tr>
+                <tr>
+                        <td class="CalWeekendDay" align="center">
+                            10
+                        </td>
+                            <td class="" align="center">
+                                11
+                            </td>
+                            <td class="" align="center">
+                                12
+                            </td>
+                            <td class="" align="center">
+                                13
+                            </td>
+                            <td class="" align="center">
+                                14
+                            </td>
+                            <td class="CalTodayDay" align="center">
+                                15
+                            </td>
+                        <td class="CalWeekendDay" align="center">
+                            16
+                        </td>
+                </tr>
+                <tr>
+                        <td class="CalWeekendDay" align="center">
+                            17
+                        </td>
+                            <td class="" align="center">
+                                18
+                            </td>
+                            <td class="" align="center">
+                                19
+                            </td>
+                            <td class="" align="center">
+                                20
+                            </td>
+                            <td class="" align="center">
+                                21
+                            </td>
+                            <td class="" align="center">
+                                22
+                            </td>
+                        <td class="CalWeekendDay" align="center">
+                            23
+                        </td>
+                </tr>
+                <tr>
+                        <td class="CalWeekendDay" align="center">
+                            24
+                        </td>
+                            <td class="" align="center">
+                                25
+                            </td>
+                            <td class="" align="center">
+                                26
+                            </td>
+                            <td class="" align="center">
+                                27
+                            </td>
+                            <td class="" align="center">
+                                28
+                            </td>
+                            <td class="" align="center">
+                                29
+                            </td>
+                        <td class="CalWeekendDay" align="center">
+                            30
+                        </td>
+                </tr>
+                <tr>
+                        <td class="CalOtherMonthDay" align="center">
+                            1
+                        </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                2
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                3
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                4
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                5
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                6
+                            </td>
+                        <td class="CalOtherMonthDay" align="center">
+                            7
+                        </td>
+                </tr>
+    </tbody>
+</table></div><script>loadBlogDefaultCalendar();</script></div>
+			
+			<div id="leftcontentcontainer">
+				<div id="blog-sidecolumn">
+<!-- 搜索 -->
+<div id="sidebar_search" class="sidebar-block">
+    <div id="sidebar_search" class="mySearch">
+        <h3 class="catListTitle">搜索</h3>
+        <div id="sidebar_search_box">
+            <div id="widget_my_zzk" class="div_my_zzk">
+                <input type="text" id="q" onkeydown="return zzk_go_enter(event);" class="input_my_zzk">&nbsp;<input onclick="zzk_go()" type="button" value="找找看" id="btnZzk" class="btn_my_zzk">
+            </div>
+            <div id="widget_my_google" class="div_my_zzk">
+                <input type="text" name="google_q" id="google_q" onkeydown="return google_go_enter(event);" class="input_my_zzk">&nbsp;<input onclick="google_go()" type="button" value="谷歌搜索" class="btn_my_zzk">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 常用链接 -->
+<div id="sidebar_shortcut" class="sidebar-block">
+    <div class="catListLink">
+<h3 class="catListTitle">
+常用链接
+</h3>
+<ul>
+		<li>
+
+<a href="https://www.cnblogs.com/balfish/p/" title="我的博客的随笔列表">我的随笔</a>
+</li>
+		<li>
+
+<a href="https://www.cnblogs.com/balfish/MyComments.html" title="我的发表过的评论列表">我的评论</a>
+</li>
+		<li>
+
+<a href="https://www.cnblogs.com/balfish/OtherPosts.html" title="我评论过的随笔列表">我的参与</a>
+</li>
+		<li>
+
+<a href="https://www.cnblogs.com/balfish/RecentComments.html" title="我的博客的评论列表">最新评论</a>
+</li>
+		<li>
+
+<a href="https://www.cnblogs.com/balfish/tag/" title="我的博客的标签列表">我的标签</a>
+</li>
+
+<li><a id="itemListLink" onclick="this.blur();WarpClass(&#39;itemListLink&#39;, &#39;itemListLin_con&#39;);return false;" href="https://www.cnblogs.com/balfish/p/8298296.html#">更多链接</a></li>
+</ul>
+<div id="itemListLin_con" style="display:none;">
+<ul>
+
+</ul>
+</div>
+</div>
+
+
+</div>
+
+<!-- 最新随笔 -->
+
+
+
+<!-- 我的标签 -->
+<div id="sidebar_toptags" class="sidebar-block">
+    
+</div>
+
+<!-- 积分与排名 -->
+
+
+<!-- 随笔分类、随笔档案、文章分类、新闻分类、相册、链接 -->
+<div id="sidebar_categories">
+    
+<div class="catListPostCategory">
+<h3 class="catListTitle">
+
+随笔分类
+
+
+</h3>
+
+
+<ul>
+
+<li>
+<a href="https://www.cnblogs.com/balfish/category/618381.html" rel="" target="">
+    acm算法题解(33)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/category/741847.html" rel="" target="">
+    java进阶(14)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/category/618386.html" rel="" target="">
+    mysql/mybatis(10)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/category/711974.html" rel="" target="">
+    springmvc(1)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/category/1146585.html" rel="" target="">
+    缓存(4)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/category/711976.html" rel="" target="">
+    脚本script(4)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/category/1165622.html" rel="" target="">
+    面试题(3)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/category/1046062.html" rel="" target="">
+    内存/网络/分布式(15)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/category/624072.html" rel="" target="">
+    其他(2)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/category/1200476.html" rel="" target="">
+    数据结构(1)
+</a>
+ 
+</li>
+
+</ul>
+
+
+</div>
+<div class="catListPostArchive">
+<h3 class="catListTitle">
+
+随笔档案
+
+
+</h3>
+
+
+<ul>
+
+<li>
+<a href="https://www.cnblogs.com/balfish/archive/2018/05.html" rel="" target="">
+    2018年5月(1)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/archive/2018/04.html" rel="" target="">
+    2018年4月(2)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/archive/2018/03.html" rel="" target="">
+    2018年3月(9)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/archive/2018/01.html" rel="" target="">
+    2018年1月(10)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/archive/2017/12.html" rel="" target="">
+    2017年12月(5)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/archive/2017/11.html" rel="" target="">
+    2017年11月(8)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/archive/2017/07.html" rel="" target="">
+    2017年7月(1)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/archive/2017/05.html" rel="" target="">
+    2017年5月(1)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/archive/2017/02.html" rel="" target="">
+    2017年2月(2)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/archive/2017/01.html" rel="" target="">
+    2017年1月(1)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/archive/2016/11.html" rel="" target="">
+    2016年11月(2)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/archive/2016/07.html" rel="" target="">
+    2016年7月(1)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/archive/2016/06.html" rel="" target="">
+    2016年6月(1)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/archive/2015/11.html" rel="" target="">
+    2015年11月(2)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/archive/2015/10.html" rel="" target="">
+    2015年10月(1)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/archive/2015/09.html" rel="" target="">
+    2015年9月(2)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/archive/2015/08.html" rel="" target="">
+    2015年8月(4)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/archive/2015/07.html" rel="" target="">
+    2015年7月(1)
+</a>
+ 
+</li>
+<li>
+<a href="https://www.cnblogs.com/balfish/archive/2014/10.html" rel="" target="">
+    2014年10月(34)
+</a>
+ 
+</li>
+
+</ul>
+
+
+</div>
+
+
+</div>
+
+<!-- 最新评论 -->
+<div id="sidebar_recentcomments" class="sidebar-block">
+    <div class="catListComment">
+<h3 class="catListTitle">最新评论</h3>
+
+	<div class="RecentCommentBlock">
+        <ul>
+                    <li class="recent_comment_title"><a href="https://www.cnblogs.com/balfish/p/9003794.html#4408194">1. Re:MySQL前缀索引和索引选择性</a></li>
+                    <li class="recent_comment_body">楼主，虽然时隔已久，但是我还是想请教：<br>‘mysql 无法使用前缀索引做覆盖扫描’  关于这一点楼主可以举个例子吗？</li>
+                    <li class="recent_comment_author">--Jinke2017</li>
+                    <li class="recent_comment_title"><a href="https://www.cnblogs.com/balfish/p/8288891.html#4328730">2. Re:MyISAM 和 InnoDB 索引的区别</a></li>
+                    <li class="recent_comment_body">看懂一点点</li>
+                    <li class="recent_comment_author">--鲜牛奶</li>
+                    <li class="recent_comment_title"><a href="https://www.cnblogs.com/balfish/p/8658691.html#4254076">3. Re:分布式事务，两阶段提交协议，三阶段提交协议</a></li>
+                    <li class="recent_comment_body">不错</li>
+                    <li class="recent_comment_author">--面朝大海|花开富贵</li>
+                    <li class="recent_comment_title"><a href="https://www.cnblogs.com/balfish/p/7905100.html#4202492">4. Re:mysql 字段定义不要用null的分析</a></li>
+                    <li class="recent_comment_body">当计算count时候null column不会计入统计<br><br>结论是对的，但是文章中的图是错的</li>
+                    <li class="recent_comment_author">--gsonkeno</li>
+                    <li class="recent_comment_title"><a href="https://www.cnblogs.com/balfish/p/8298296.html#4199102">5. Re:数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读</a></li>
+                    <li class="recent_comment_body">补充一点：本文分析的很透彻，赞！虽然理论上说3. Repeatable Read(重复读)隔离级别在mysql中可能引起幻读的问题，但是mysql InnoDB存储引擎和XtraDB存储引擎通过多版本...</li>
+                    <li class="recent_comment_author">--行者2008</li>
+        </ul>
+    </div>
+</div>
+
+
+</div>
+
+
+
+<!-- 阅读排行榜 -->
+<div id="sidebar_topviewedposts" class="sidebar-block">
+    <div class="catListView">
+<h3 class="catListTitle">阅读排行榜</h3>
+	<div id="TopViewPostsBlock">
+        <ul style="word-break:break-all">
+                    <li>
+                        <a href="https://www.cnblogs.com/balfish/p/8298296.html">
+                            1. 数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读(18267)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/balfish/p/7905100.html">
+                            2. mysql 字段定义不要用null的分析(12423)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/balfish/p/8658691.html">
+                            3. 分布式事务，两阶段提交协议，三阶段提交协议(7277)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/balfish/p/9003794.html">
+                            4. MySQL前缀索引和索引选择性(3297)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/balfish/p/8288891.html">
+                            5. MyISAM 和 InnoDB 索引的区别(2949)
+                        </a>
+                    </li>
+        </ul>
+    </div>
+</div>
+
+
+</div>
+
+<!-- 评论排行榜 -->
+<div id="sidebar_topcommentedposts" class="sidebar-block">
+    <div class="catListFeedback">
+<h3 class="catListTitle">评论排行榜</h3>
+	<div id="TopFeedbackPostsBlock">
+        <ul style="word-break:break-all">
+                    <li>
+                        <a href="https://www.cnblogs.com/balfish/p/8298296.html">
+                            1. 数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读(3)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/balfish/p/8288891.html">
+                            2. MyISAM 和 InnoDB 索引的区别(1)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/balfish/p/8182989.html">
+                            3. 深拷贝和浅拷贝(1)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/balfish/p/7905100.html">
+                            4. mysql 字段定义不要用null的分析(1)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/balfish/p/9003794.html">
+                            5. MySQL前缀索引和索引选择性(1)
+                        </a>
+                    </li>
+        </ul>
+    </div>
+</div>
+
+
+</div>
+
+<!-- 推荐排行榜 -->
+<div id="sidebar_topdiggedposts" class="sidebar-block">
+    <div id="topdigg_posts_wrap">
+    <div class="catListView">
+        <h3 class="catListTitle">推荐排行榜</h3>
+        <div id="TopDiggPostsBlock">
+            <ul style="word-break: break-all">
+                        <li>
+                            <a href="https://www.cnblogs.com/balfish/p/8298296.html">
+                                1. 数据库事务隔离级别 - 分析脏读 &amp; 不可重复读 &amp; 幻读(2)
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.cnblogs.com/balfish/p/7905100.html">
+                                2. mysql 字段定义不要用null的分析(1)
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.cnblogs.com/balfish/p/8658691.html">
+                                3. 分布式事务，两阶段提交协议，三阶段提交协议(1)
+                            </a>
+                        </li>
+            </ul>
+        </div>
+    </div>
+</div>
+</div></div>
+                    <script>loadBlogSideColumn();</script>
+			</div>
+			
+		</div><!--end: sideBarMain -->
+	</div><!--end: sideBar 侧边栏容器 -->
+	<div class="clear"></div>
+	</div><!--end: main -->
+	<div class="clear"></div>
+	<div id="footer">
+		<!--done-->
+Copyright © 2019 balfish
+<br><span id="poweredby">Powered by .NET Core 3.0.0 on Linux</span>
+
+
+
+	</div><!--end: footer -->
+</div><!--end: home 自定义的最大容器 -->
+
+
+    <div id="page_end_html">
+        <script language="javascript" type="text/javascript">
+//生成目录索引列表
+function GenerateContentList()
+{
+    var jquery_h3_list = $('#cnblogs_post_body h2');//如果你的章节标题不是h3,只需要将这里的h3换掉即可
+    if(jquery_h3_list.length>0)
+    {
+        var content = '<a name="_labelTop"></a>';
+        content    += '<div id="navCategory">';
+        content    += '<p style="font-size:18px"><b>阅读目录</b></p>';
+        content    += '<ul>';
+        for(var i =0;i<jquery_h3_list.length;i++)
+        {
+            var go_to_top = '<div style="text-align: right"><a href="#_labelTop">回到顶部</a><a name="_label' + i + '"></a></div>';
+            $(jquery_h3_list[i]).before(go_to_top);
+            var li_content = '<li><a href="#_label' + i + '">' + $(jquery_h3_list[i]).text() + '</a></li>';
+            content += li_content;
+        }
+        content    += '</ul>';
+        content    += '</div>';
+        if($('#cnblogs_post_body').length != 0 )
+        {
+            $($('#cnblogs_post_body')[0]).prepend(content);
+        }
+    }    
+}
+GenerateContentList();
+</script>
+    </div>
+
+
+</body></html>
